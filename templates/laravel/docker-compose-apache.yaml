@@ -1,0 +1,76 @@
+# version: "3.9" # obsoleted for docker compose version 2
+
+services:
+  db_app:
+    build:
+       context: ./mysql
+       dockerfile: Dockerfile.oracle-8.4
+    container_name: db_app
+    restart: unless-stopped
+    ports:
+     - "${DB_EXTERNAL_PORT}:3306"
+    volumes:
+      - "${DB_CONTAINER_VOLUME}/data:/var/lib/mysql:rw"
+      - "${DB_CONTAINER_VOLUME}/conf.d:/etc/mysql/conf.d:ro"
+      - "${DB_CONTAINER_VOLUME}/scripts:/docker-entrypoint-initdb.d:ro"
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      DB_USER: /run/secrets/db_user
+      DB_PASSWORD: /run/secrets/db_password
+      DB_NAME: "${DB_NAME}"
+      DB_HOST: "${DB_HOST}"
+      DB_EXTERNAL_PORT: "${DB_EXTERNAL_PORT}"
+      SERVICE_TAGS: "v1.0.0"
+      SERVICE_NAME: "db_app_mysql_8.4"
+    secrets:
+      - mysql_root_password
+      - db_user
+      - db_password
+    networks:
+      draft_network:
+        aliases:
+          - db_app
+  web_app:
+    build:
+      context: ./php
+      dockerfile: Dockerfile.apache-bullseye
+    container_name: web_app
+    restart: unless-stopped
+    ports:
+      - "${WEB_EXTERNAL_PORT}:80"
+    volumes:
+      - "${WEB_CONTAINER_VOLUME}:/var/www/html:rw"
+    environment:
+      environment:
+      DB_USER: /run/secrets/db_user
+      DB_PASSWORD: /run/secrets/db_password
+      DB_NAME: "${DB_NAME}"
+      DB_HOST: "${DB_HOST}"
+      WEB_EXTERNAL_PORT: "${WEB_EXTERNAL_PORT}"
+      SERVICE_TAGS: "v1.0.0"
+      SERVICE_NAME: web_app
+    secrets:
+      - db_user
+      - db_password
+    depends_on:
+      - db_app
+    networks:
+      draft_network:
+        aliases:
+          - web_app
+
+volumes:
+  docker: {}
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password
+  db_user:
+    file: ./secrets/db_user
+  db_password:
+    file: ./secrets/db_password
+networks:
+  draft_network:
+    name: php_network
+    driver: bridge
+    ipam:
+      driver: default

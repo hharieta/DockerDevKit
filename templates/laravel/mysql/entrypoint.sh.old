@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# script name: entrypoint.sh
+# author: Inge Gatovsky
+# date: 25/05/24
+
+set -euo pipefail
+
+wait_mysql() {
+    echo "Waiting for MySQL to start..."
+    until mysqladmin ping -h "127.0.0.1" -P "3306" --silent; do
+        echo "MySQL is unavailable - sleeping"
+        sleep 2
+    done
+    echo "MySQL is up and running!"
+}
+
+# Fix error:
+# If you are installing InnoDB, remember that you must
+# create directories yourself, InnoDB does not create them.
+mkdir -p /var/lib/mysql /var/run/mysqld
+chown -R mysql:mysql /var/lib/mysql /var/run/mysqld
+
+# force MySQL to start if it's not initialized
+# if [ ! -d "/var/lib/mysql/mysql" ]; then
+#     echo "Initializing database..."
+#     mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql --skip-networking
+# fi
+
+# start MySQL background
+mysqld --defaults-file=/etc/mysql/conf.d/my.cnf --skip-networking & 
+mysqld_pid=$!
+# wait for MySQL to start
+wait_mysql
+
+# execute scripts in /docker-entrypoint-initdb.d
+for script in /docker-entrypoint-initdb.d/*.sql /docker-entrypoint-initdb.d/*.sh; do
+  case "$script" in
+    *.sh)  echo "$0: executing $script"; . "$script" ;;
+    *.sql) echo "$0: executing $script"; mysql -u root -p${MYSQL_ROOT_PASSWORD} < "$script" ;;
+    *)     echo "$0: ignore $script" ;;
+  esac
+  echo
+done
+
+# stop the MySQL at background
+kill $mysql_pid
+wait $mysql_pid
+
+# start normal MySQL process
+exec mysqld

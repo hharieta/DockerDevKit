@@ -1,0 +1,28 @@
+FROM mysql:8.4.0-oracle
+
+LABEL maintainer "Gatovsky | L20530228@cancun.tecnm.mx"
+
+# ARG USERID=1001
+# ARG GROUPID=1001
+# ARG USERNAME=dbuser
+
+RUN microdnf update -y \
+        && microdnf install -y \
+        vim \
+        && microdnf clean all
+
+# RUN groupadd --gid ${GROUPID} ${USERNAME} \
+#         && useradd --uid ${USERID} --gid ${GROUPID} --shell /bin/bash -m ${USERNAME}
+
+# RUN chown -R ${USERNAME}:${USERNAME} /docker-entrypoint-initdb.d /var/lib/mysql /var/run/mysqld
+
+# COPY entrypoint.sh /entrypoint.sh
+# RUN chmod +x /entrypoint.sh
+
+RUN chown -R mysql:mysql /docker-entrypoint-initdb.d /var/lib/mysql /var/run/mysqld
+
+USER mysql
+
+EXPOSE 3306
+
+CMD ["mysqld"]

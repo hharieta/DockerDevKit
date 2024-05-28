@@ -1,0 +1,7 @@
+.env
+templates/laravel/db/data
+templates/laravel/db/conf.d
+templates/laravel/db/scripts/01-fac.sql
+templates/laravel/app
+secrets
+.DS_Store
