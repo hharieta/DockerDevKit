@@ -42,13 +42,13 @@ To install the application using Docker compose, follow the steps below:
 1. Clone the repository:
 
     ```bash
-    git clone user/repo.git
+    git clone https://github.com/hharieta/DockerDevKit.git
     ```
 
 2. Change to the repository directory:
 
     ```bash
-    cd repo
+    cd DockerDevKit
     ```
 
 3. Create a `.env` file in the root of the template with the following content:
