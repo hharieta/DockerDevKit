@@ -3,6 +3,15 @@
     <h2 class="subtitle">Lista de Servicios Terminados</h2>
 
 </div>
+<div class="container is-fluid m4">
+    <a href="../php/generar_reporte.php" class="button is-primary is-large">Generar Reporte en PDF</a>
+    </div>
+    <div class="container pb-4 pt4">
+        <?php
+        require_once "./php/main.php";
+        // Aquí puedes agregar el código para mostrar la lista de servicios terminados
+        ?>
+    </div>
 
 <div class="container pb-6 pt6">
     <?php
